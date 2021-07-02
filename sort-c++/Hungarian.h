@@ -12,7 +12,14 @@
 #include <iostream>
 #include <vector>
 
+#include <cmath>
+#include <cfloat>
+
 using namespace std;
+
+#ifndef DBL_EPSILON
+#define DBL_EPSILON __DBL_EPSILON__
+#endif
 
 
 class HungarianAlgorithm

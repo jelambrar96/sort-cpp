@@ -16,6 +16,7 @@ void KalmanTracker::init_kf(StateType stateMat)
 
 	measurement = Mat::zeros(measureNum, 1, CV_32F);
 
+#if 0
 	kf.transitionMatrix = *(Mat_<float>(stateNum, stateNum) <<
 		1, 0, 0, 0, 1, 0, 0,
 		0, 1, 0, 0, 0, 1, 0,
@@ -24,12 +25,31 @@ void KalmanTracker::init_kf(StateType stateMat)
 		0, 0, 0, 0, 1, 0, 0,
 		0, 0, 0, 0, 0, 1, 0,
 		0, 0, 0, 0, 0, 0, 1);
+#else
+
+	size_t len_data = stateNum * stateNum;
+	float *data = new float[len_data];
+	const float constant_data[] = {
+                1, 0, 0, 0, 1, 0, 0,
+                0, 1, 0, 0, 0, 1, 0,
+                0, 0, 1, 0, 0, 0, 1,
+                0, 0, 0, 1, 0, 0, 0,
+                0, 0, 0, 0, 1, 0, 0,
+                0, 0, 0, 0, 0, 1, 0,
+                0, 0, 0, 0, 0, 0, 1
+	};
+	for (size_t i = 0; i < len_data; ++i) {
+		data[i] = constant_data[i];
+	}
+	kf.transitionMatrix = cv::Mat(stateNum, stateNum, CV_32F, data);
+
+#endif
 
 	setIdentity(kf.measurementMatrix);
 	setIdentity(kf.processNoiseCov, Scalar::all(1e-2));
 	setIdentity(kf.measurementNoiseCov, Scalar::all(1e-1));
 	setIdentity(kf.errorCovPost, Scalar::all(1));
-	
+
 	// initialize state vector with bounding box in [cx,cy,s,r] style
 	kf.statePost.at<float>(0, 0) = stateMat.x + stateMat.width / 2;
 	kf.statePost.at<float>(1, 0) = stateMat.y + stateMat.height / 2;
